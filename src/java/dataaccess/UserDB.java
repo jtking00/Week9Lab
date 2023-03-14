@@ -2,6 +2,7 @@ package dataaccess;
 
 import java.sql.*;
 import java.util.*;
+import javax.persistence.*;
 import models.User;
 import models.Role;
 /**
@@ -9,123 +10,77 @@ import models.Role;
  */
 public class UserDB {
     
-    public ArrayList<User> getUsers() throws Exception{
-        ArrayList<User> users = new ArrayList<>();
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection con = cp.getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        
-        String sql = "SELECT * FROM user JOIN role ON user.role = role.role_id";
+    public List<User> getUsers() throws Exception{
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
         
         try{
-            ps = con.prepareStatement(sql);
-            rs = ps.executeQuery();
-            while(rs.next()){
-                String email = rs.getString(1);
-                String fName = rs.getString(2);
-                String lName = rs.getString(3);
-                String pass = rs.getString(4);
-                int roleId = rs.getInt(5);
-                String rName = rs.getString(7);
-                Role curRole = new Role(roleId, rName);
-                User user = new User(email,fName,lName,pass,curRole);
-                users.add(user);
-            }
+            List<User> users = em.createNamedQuery("User.findAll", User.class).getResultList();
+            return users;
         } finally {
-            DBUtil.closeResultSet(rs);
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(con);
+            em.close();
         }
-        return users;
     }
     
     public User getUser(String email) throws Exception{
-        User user = null;
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection con = cp.getConnection();
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        
-        String sql = "SELECT * FROM user JOIN role ON user.role = role.role_id WHERE email=?";
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
         
         try{
-            ps = con.prepareStatement(sql);
-            ps.setString(1, email);
-            rs = ps.executeQuery();
-            if(rs.next()){
-                String fName = rs.getString(2);
-                String lName = rs.getString(3);
-                String pass = rs.getString(4);
-                int roleId = rs.getInt(5);
-                String rName = rs.getString(7);
-                Role curRole = new Role(roleId, rName);
-                user = new User(email,fName,lName,pass,curRole);
-            }
+            User user = em.find(User.class, email);
+            return user;
         } finally {
-            DBUtil.closeResultSet(rs);
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(con);
+            em.close();
         }
-        return user;
+        
     }
     
     public void insertUser(User user) throws Exception{
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection con = cp.getConnection();
-        PreparedStatement ps = null;
-        
-        String sql = "INSERT INTO user (email,first_name,last_name,password,role) VALUES (?,?,?,?,?)";
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction trans = em.getTransaction();
         
         try {
-            ps = con.prepareStatement(sql);
-            ps.setString(1, user.getEmail());
-            ps.setString(2, user.getFirstName());
-            ps.setString(3, user.getLastName());
-            ps.setString(4, user.getPass());
-            ps.setInt(5, user.getRole().getRoleId());
-            ps.executeUpdate();
+            User newUser = user;
+            Role curRole = newUser.getRole();
+            trans.begin();
+            em.persist(newUser);
+            em.merge(curRole);
+            trans.commit();
+        } catch(Exception ex){
+            trans.rollback();
         } finally {
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(con);
+            em.close();
         }
     }
     
     public void updateUser(User user) throws Exception{
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection con = cp.getConnection();
-        PreparedStatement ps = null;
-        
-        String sql = "UPDATE user SET first_name=?, last_name=?, password=?, role=? WHERE email=?";
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction trans = em.getTransaction();
         
         try{
-            ps = con.prepareStatement(sql);
-            ps.setString(1, user.getFirstName());
-            ps.setString(2, user.getLastName());
-            ps.setString(3, user.getPass());
-            ps.setInt(4, user.getRole().getRoleId());
-            ps.setString(5, user.getEmail());
-            ps.executeUpdate();
+            User curUser = user;
+            Role curRole = curUser.getRole();
+            trans.begin();
+            em.merge(curUser);
+            trans.commit();
+        } catch(Exception ex){
+            trans.rollback();
         } finally {
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(con);
+            em.close();
         }
     }
     
     public void deleteUser(User user) throws Exception{
-        ConnectionPool cp = ConnectionPool.getInstance();
-        Connection con = cp.getConnection();
-        PreparedStatement ps = null;
-        
-        String sql = "DELETE FROM user WHERE email=?";
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction trans = em.getTransaction();
         
         try{
-            ps = con.prepareStatement(sql);
-            ps.setString(1, user.getEmail());
-            ps.executeUpdate();
+            User delUser = user;
+            trans.begin();
+            em.remove(delUser);
+            trans.commit();
+        } catch(Exception ex){
+            trans.rollback();
         } finally {
-            DBUtil.closePreparedStatement(ps);
-            cp.freeConnection(con);
+            em.close();
         }
     }
 }

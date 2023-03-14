@@ -12,9 +12,9 @@ public class RoleService {
         Role curRole = roleDB.getRole(id);
         return curRole;
     }
-    public ArrayList<Role> getRoles() throws Exception {
+    public List<Role> getRoles() throws Exception {
         RoleDB roleDB = new RoleDB();
-        ArrayList<Role> roles = roleDB.getRoles();
+        List<Role> roles = roleDB.getRoles();
         return roles;
     }
 }

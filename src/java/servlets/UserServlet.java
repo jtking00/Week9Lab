@@ -47,7 +47,7 @@ public class UserServlet extends HttpServlet {
             }
         }
         try{
-            ArrayList<User> users = uService.getUsers();
+            List<User> users = uService.getUsers();
             request.setAttribute("users", users);
         } catch(Exception e) {
             request.setAttribute("errorMsg", "Error occuered while loading users");
@@ -72,7 +72,7 @@ public class UserServlet extends HttpServlet {
             request.setAttribute("errorMsg", "All Fields are required");
             action = null;
             try {
-                ArrayList<User> users = uService.getUsers();
+                List<User> users = uService.getUsers();
                 request.setAttribute("users", users);
             } catch (Exception e) {
             }
@@ -82,15 +82,14 @@ public class UserServlet extends HttpServlet {
             switch(action){
                 case "add" : {
                     try {
-                        ArrayList<User> users = uService.getUsers();
+                        List<User> users = uService.getUsers();
                         for(int i = 0; i < users.size(); i++){
                             if(users.get(i).getEmail().equals(newEmail)){
                                 request.setAttribute("erroryMsg", "That email is already in use");
                             }
                         }
                         int newRoleId = Integer.parseInt(newRole);
-                        Role role = new Role(newRoleId);
-                        uService.insertUser(newEmail, newFirstName, newLastName, newPass, role);
+                        uService.insertUser(newEmail, newFirstName, newLastName, newPass, newRoleId);
                     } catch(Exception e) {
                         request.setAttribute("errorMsg", "Error occuered while adding user");
                     }
@@ -110,7 +109,7 @@ public class UserServlet extends HttpServlet {
         }
         
         try{
-            ArrayList<User> users = uService.getUsers();
+            List<User> users = uService.getUsers();
             request.setAttribute("users", users);
         } catch(Exception e) {
             
