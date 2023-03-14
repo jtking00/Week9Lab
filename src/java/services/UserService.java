@@ -33,10 +33,9 @@ public class UserService {
         user.setRole(role);
         userDB.updateUser(user);
     }
-    public void deleteUser(String email) throws Exception {
+    public void deleteUser(User user) throws Exception {
         UserDB userDB = new UserDB();
-        User user = new User();
-        user.setEmail(email);
-        userDB.deleteUser(user);
+        User delUser = user;
+        userDB.deleteUser(delUser);
     }
 }

@@ -75,7 +75,7 @@ public class UserDB {
         try{
             User delUser = user;
             trans.begin();
-            em.remove(delUser);
+            em.remove(em.merge(delUser));
             trans.commit();
         } catch(Exception ex){
             trans.rollback();

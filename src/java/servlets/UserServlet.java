@@ -2,8 +2,6 @@ package servlets;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.*;
 import services.*;
@@ -38,7 +36,8 @@ public class UserServlet extends HttpServlet {
                 case "delete" : {
                     try{
                         String email = request.getParameter("email");
-                        uService.deleteUser(email);
+                        User delUser = uService.getUser(email);
+                        uService.deleteUser(delUser);
                     } catch(Exception e) {
                         request.setAttribute("errorMsg", "Error occuered while deleting user");
                     }
